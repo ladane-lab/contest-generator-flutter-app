@@ -153,6 +153,7 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
   }
 }
 
+/// Home Landing Page: Main landing screen with Admin Login and Join Contest options
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -265,6 +266,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
+/// Admin Login Page: Allows contest organizers to log in with email and password via Supabase Auth
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
 
@@ -279,6 +281,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
   bool loading = false;
   bool hidePassword = true;
 
+  /// Handles admin authentication against Supabase Auth
   Future<void> login() async {
     final email = emailController.text.trim();
     final password = passwordController.text;
@@ -438,6 +441,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
   }
 }
 
+/// Admin Sign Up Page: Allows new contest organizers to register an email account
 class AdminSignUpPage extends StatefulWidget {
   const AdminSignUpPage({super.key});
 
@@ -454,6 +458,7 @@ class _AdminSignUpPageState extends State<AdminSignUpPage> {
   bool hidePassword = true;
   bool hideConfirmPassword = true;
 
+  /// Registers a new admin user in Supabase Auth
   Future<void> signUp() async {
     final email = emailController.text.trim();
     final password = passwordController.text;
@@ -660,6 +665,7 @@ class _AdminSignUpPageState extends State<AdminSignUpPage> {
   }
 }
 
+/// Join Contest Page: Allows participants to enter a contest slug key without sign-up
 class JoinContestPage extends StatefulWidget {
   const JoinContestPage({super.key});
 
@@ -671,6 +677,7 @@ class _JoinContestPageState extends State<JoinContestPage> {
   final slugController = TextEditingController();
   bool loading = false;
 
+  /// Verifies if contest key exists in database and checks if participant is already registered
   Future<void> findContest() async {
     final slug = slugController.text.trim();
 
@@ -696,7 +703,7 @@ class _JoinContestPageState extends State<JoinContestPage> {
         return;
       }
 
-      // Check if participant is already registered for this contest
+      // Check if participant is already registered for this contest key on this phone
       try {
         final prefs = await SharedPreferences.getInstance();
         final savedId = prefs.getString('saved_participant_id');
@@ -709,6 +716,7 @@ class _JoinContestPageState extends State<JoinContestPage> {
               .eq('id', savedId)
               .maybeSingle();
 
+          // Restore existing participant session without creating duplicate database row
           if (existingP != null && mounted) {
             Navigator.pushReplacement(
               context,
@@ -815,6 +823,7 @@ class _JoinContestPageState extends State<JoinContestPage> {
   }
 }
 
+/// Participant Details Page: Displays contest timing info, live countdown, and participant registration form
 class ParticipantDetailsPage extends StatefulWidget {
   final Map<String, dynamic> contest;
 
@@ -838,6 +847,7 @@ class _ParticipantDetailsPageState
   @override
   void initState() {
     super.initState();
+    // 1-second periodic timer to update live contest countdown
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
@@ -2831,6 +2841,7 @@ int main() {
   }
 }
 
+/// Real-time Leaderboard Sheet Widget: Listens to Supabase Realtime streams for live rankings, scores, and IST timestamps
 class RealtimeLeaderboardWidget extends StatefulWidget {
   final String contestId;
   final String currentParticipantId;
@@ -3384,9 +3395,11 @@ class _RealtimeLeaderboardWidgetState
   }
 }
 
+/// Admin Dashboard Page: Main portal for organizers to create and manage contests
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
 
+  /// Logs out admin and clears active local session
   Future<void> logout(BuildContext context) async {
     await supabase.auth.signOut();
     try {
@@ -3476,6 +3489,7 @@ class AdminDashboardPage extends StatelessWidget {
   }
 }
 
+/// Create Contest Page: Form to enter title, slug key, description, start time, and end time
 class CreateContestPage extends StatefulWidget {
   const CreateContestPage({super.key});
 
@@ -3713,6 +3727,7 @@ class _CreateContestPageState extends State<CreateContestPage> {
   }
 }
 
+/// Monaco Editor Widget: Dark IDE code editor with dynamic left gutter line numbers
 class MonacoEditorWidget extends StatefulWidget {
   final TextEditingController controller;
 
@@ -3807,6 +3822,7 @@ class _MonacoEditorWidgetState extends State<MonacoEditorWidget> {
   }
 }
 
+/// Manage Contests Page: Lists contests created by the logged-in admin with edit, problem management, and leaderboard access
 class ManageContestsPage extends StatefulWidget {
   const ManageContestsPage({super.key});
 
@@ -4318,6 +4334,7 @@ class _ManageContestsPageState extends State<ManageContestsPage> {
   }
 }
 
+/// Manage Test Cases Dialog: Modal allowing admins to add/delete test cases for any existing problem
 class ManageTestCasesDialog extends StatefulWidget {
   final Map<String, dynamic> problem;
 
@@ -4572,6 +4589,7 @@ class _ManageTestCasesDialogState extends State<ManageTestCasesDialog> {
   }
 }
 
+/// Model class managing input controllers and hidden status for dynamic test case cards
 class TestCaseInputItem {
   final TextEditingController inputController;
   final TextEditingController expectedOutputController;
@@ -4590,6 +4608,7 @@ class TestCaseInputItem {
   }
 }
 
+/// Add Problem Page: Form to create a coding question with statement, constraints, and dynamic test cases
 class AddProblemPage extends StatefulWidget {
   final Map<String, dynamic> contest;
 

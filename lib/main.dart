@@ -1,4 +1,9 @@
 
+// ============================================================================
+// ONLINE CODING CONTEST GENERATION & EVALUATION SYSTEM
+// MCA Mini Project - Flutter Mobile Application
+// ============================================================================
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -6,12 +11,16 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// Supabase Credentials (Cloud PostgreSQL Database & Authentication)
 const supabaseUrl = 'https://fdgnoliqgyvkhviinuzu.supabase.co';
 const supabaseKey = 'sb_publishable_MsnWi8aP7oAG7XRQKo8m6w_KlPr5AMA';
 
+/// Application Entry Point
 Future<void> main() async {
+  // Ensure Flutter engine bindings are initialized before running async tasks
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Supabase client for database operations, authentication, and realtime streams
   await Supabase.initialize(
     url: supabaseUrl,
     publishableKey: supabaseKey,
@@ -20,12 +29,15 @@ Future<void> main() async {
   runApp(const ContestGeneratorApp());
 }
 
+// Global Supabase instance for database queries
 final supabase = Supabase.instance.client;
 
+// Application Theme Colors
 const bgColor = Color(0xFFF1F5F9);
 const blueColor = Color(0xFF315CE8);
 const purpleColor = Color(0xFF7552E8);
 
+/// Root MaterialApp Widget
 class ContestGeneratorApp extends StatelessWidget {
   const ContestGeneratorApp({super.key});
 
@@ -46,11 +58,14 @@ class ContestGeneratorApp extends StatelessWidget {
           ),
         ),
       ),
+      // Starts on AppStartupScreen to check and restore saved sessions automatically
       home: const AppStartupScreen(),
     );
   }
 }
 
+/// App Startup Screen: Checks saved local memory (SharedPreferences) on launch
+/// Automatically restores logged-in Admins to Dashboard or Participants to Active Contest Workspace
 class AppStartupScreen extends StatefulWidget {
   const AppStartupScreen({super.key});
 
@@ -62,11 +77,13 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
   @override
   void initState() {
     super.initState();
+    // Wait until initial frame is rendered to prevent '_debugLocked' Navigator errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkSavedSession();
     });
   }
 
+  /// Checks if Admin or Participant session is already saved on this phone
   Future<void> _checkSavedSession() async {
     // 1. Check if Admin is logged in via Supabase Auth
     final currentUser = supabase.auth.currentUser;
@@ -79,13 +96,14 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
       return;
     }
 
-    // 2. Check if Participant session exists in SharedPreferences
+    // 2. Check if Participant session exists in local phone storage (SharedPreferences)
     try {
       final prefs = await SharedPreferences.getInstance();
       final pId = prefs.getString('saved_participant_id');
       final cSlug = prefs.getString('saved_contest_slug');
 
       if (pId != null && cSlug != null) {
+        // Fetch contest and participant records from Supabase cloud database
         final contest = await supabase
             .from('contests')
             .select('*')
@@ -98,6 +116,7 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
             .eq('id', pId)
             .maybeSingle();
 
+        // If active session found, restore user straight into Contest Workspace
         if (contest != null && participant != null && mounted) {
           Navigator.pushReplacement(
             context,
@@ -115,7 +134,7 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
       debugPrint('Error restoring session: $e');
     }
 
-    // 3. Otherwise go to HomePage
+    // 3. Otherwise, navigate to main Home Landing Screen
     if (mounted) {
       Navigator.pushReplacement(
         context,
